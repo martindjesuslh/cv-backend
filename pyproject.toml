@@ -1,0 +1,27 @@
+[project]
+name = "cv-backend"
+version = "0.1.0"
+description = "API para generar cv automáticos mejorados por IA"
+authors = [
+    {name = "Martin De Jesus",email = "martindjesuslh@gmail.com"}
+]
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "fastapi (>=0.116.1,<0.117.0)",
+    "uvicorn (>=0.35.0,<0.36.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.group.dev.dependencies]
+black = "^25.1.0"
+flake8 = "^7.3.0"
+pytest = "^8.4.1"
+pytest-cov = "^6.2.1"
+python-dotenv = "^1.1.1"
+
