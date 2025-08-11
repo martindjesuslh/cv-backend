@@ -66,7 +66,7 @@ class _ApiClient:
             )
 
     async def __handle_response(
-        self, *, response, response_model: Type[T]
+        self, response, response_model: Type[T]
     ) -> Union[SuccessHttpResponse[T], ErrorHttpResponse]:
         if 200 <= response.status_code < 300:
             try:
@@ -80,7 +80,7 @@ class _ApiClient:
                 return ErrorHttpResponse(
                     success=False,
                     status_code=500,
-                    error="Failed to parsed response data",
+                    error="Failed to parse response data",
                     error_code="PARSE_ERROR",
                     details=str(e),
                 )
@@ -93,7 +93,7 @@ class _ApiClient:
                 details=response.text,
             )
 
-    def _get_success_message(self, *, status_code: int) -> str:
+    def _get_success_message(self, status_code: int) -> str:
         messages = {
             201: settings.MESSAGES_RESPONSE["CREATED"],
             204: settings.MESSAGES_RESPONSE["DELETED"],
@@ -135,4 +135,6 @@ class _ApiClient:
         )
 
 
-api_client = _ApiClient(base_url="https://api.restful-api.dev/")
+api_client = _ApiClient(
+    base_url=settings.API_BASE_URL, timeout=settings.REQUEST_TIMEOUT
+)

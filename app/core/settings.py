@@ -3,7 +3,8 @@ from typing import Dict
 
 class Settings:
     API_BASE_URL: str = ""
-    REQUEST_TIMEOUT = 30
+    REQUEST_TIMEOUT: int = 30
+    SCRAPED_TIMEOUT: int = 30
 
     MESSAGES_RESPONSE: Dict[str, str] = {
         "SUCCESS": "Operation completed successfully",
