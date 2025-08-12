@@ -1,56 +1,72 @@
 from fastapi import FastAPI
-from app.core.responses import ApiResponse
-from app.core.http_client import api_client
-from app.models.example import ResponseModel, BaseObject
+from bs4 import BeautifulSoup
+from app.core.responses import ok, bad_request, not_found, internal_error
+from app.modules.scraper.models import ScrapedData, ScrapeMethod
+from app.modules.browser.models import BrowserTask, BrowserAction, ActionType
+from app.modules.browser.service import browser_controller
+import time
 
 app = FastAPI()
-api_response = ApiResponse()
 
+url_test = "http://localhost:4200"
 
-@app.get("/")
-def read_root():
-    return api_response.success(data={"test": "stes"}, message="Welcome")
-
-
-@app.get("/error")
-def error_root():
-    return api_response.error(
-        message="my custom error", error_code="NOt Fund", status_code=404
-    )
-
-
-payload = BaseObject(
-    name="Apple MacBook Pro 16",
-    data={
-        "year": 2019,
-        "price": 1849.99,
-        "CPU model": "Intel Core i9",
-        "Hard disk size": "1 TB",
-    },
-)
-
-
-@app.get("/post")
-async def test_post():
-    response = await api_client.post(
-        endpoint="objects", response_model=ResponseModel, data=payload
-    )
-    if response.success:
-        return api_response.success(
-            data=response.data.model_dump() if response.data else None,
-            message=response.message,
-            status_code=response.status_code
+@app.get("/browser")
+async def browser_with_scrape():
+    try:
+        # Ejecutamos las acciones en el browser
+        task = BrowserTask(
+            url=url_test,
+            actions=[
+                BrowserAction(
+                    type=ActionType.CLICK, 
+                    selector="#test-button", 
+                    timeout=10
+                ),
+                BrowserAction(
+                    type=ActionType.WAIT, 
+                    wait_time=2
+                )
+            ],
+            headless=True,
+            cookies=None,
         )
-    else:
-        return api_response.error(
-            message=response.error,
-            error_code=response.error_code,
-            status_code=response.status_code,
-            details=response.details
+        
+        browser_result = browser_controller.execute_task(task)
+        
+        if not browser_result.get("success"):
+            return bad_request(message="Error en browser", details=browser_result.get("error"))
+        
+        # Procesamos el page_source directamente con BeautifulSoup
+        page_source = browser_result.get("page_source", "")
+        
+        if not page_source:
+            return bad_request(message="No se obtuvo page_source del browser")
+        
+        # Scraping directo del page_source
+        soup = BeautifulSoup(page_source, "html.parser")
+        
+        # Buscamos el div con la clase lorem
+        lorem_div = soup.select_one('.lorem')
+        lorem_text = lorem_div.get_text(strip=True) if lorem_div else None
+        
+        # Creamos un resultado de scraping manual
+        scrape_result = ScrapedData(
+            url=url_test,
+            data={
+                "lorem_content": lorem_text,
+                "lorem_found": lorem_text is not None
+            },
+            timestamp=time.strftime("%Y-%m-%d %H:%M:%S"),
+            method_used=ScrapeMethod.BEAUTIFUL_SOUP
         )
+        
+        return ok(data={
+            "scrape_result": scrape_result.model_dump()
+        }, message="Acciones completadas y contenido extraído")
 
+    except Exception as e:
+        return internal_error(details=str(e))
 
 if __name__ == "__main__":
     import uvicorn
-
     uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)

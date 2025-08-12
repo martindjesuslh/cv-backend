@@ -51,6 +51,15 @@ def ok(data: Any = None, message: str = None, meta: Optional[Dict[str, Any]] = N
     return _ApiResponse._success(data=data, message=message, status_code=200, meta=meta)
 
 
+def internal_error(message: str = None, details: Any = None):
+    return _ApiResponse._error(
+        message=message or settings.MESSAGES_RESPONSE["INTERNAL_ERROR"],
+        status_code=500,
+        details=details,
+        error_code="INTERNAL_ERROR",
+    )
+
+
 def not_found(message: str = None):
     return _ApiResponse._error(
         message=message or settings.MESSAGES_RESPONSE["NOT_FOUND"],
@@ -66,6 +75,3 @@ def bad_request(message: str = None, details: Any = None):
         status_code=400,
         details=details,
     )
-
-
-api_response = _ApiResponse()
