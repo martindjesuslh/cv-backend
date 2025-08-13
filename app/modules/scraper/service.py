@@ -2,7 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 from typing import Dict, Optional, Any
 from app.modules.scraper.models import ScrapedTarget, ScrapedData, ScrapeMethod
-from app.core.settings import settings
+from app.core.config.settings import settings
 import time
 import re
 

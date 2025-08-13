@@ -1,8 +1,8 @@
 import httpx
 from typing import Any, Optional, Dict, TypeVar, Type, Union
 from pydantic import BaseModel
-from app.schemas.responses import SuccessHttpResponse, ErrorHttpResponse
-from app.core.settings import settings
+from app.core.schemas.responses import SuccessHttpResponse, ErrorHttpResponse
+from app.core.config.settings import settings
 
 T = TypeVar("T", bound=BaseModel)
 

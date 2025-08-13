@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from typing import List, Dict, Optional, Any
 from enum import Enum
-from app.core.settings import settings
+from app.core.config.settings import settings
 
 
 class ScrapeMethod(str, Enum):

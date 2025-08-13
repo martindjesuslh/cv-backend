@@ -1,7 +1,7 @@
 from typing import Any, Optional, Dict
 from fastapi.responses import JSONResponse
-from app.schemas.responses import SuccessHttpResponse, ErrorHttpResponse
-from app.core.settings import settings
+from app.core.schemas.responses import SuccessHttpResponse, ErrorHttpResponse
+from app.core.config.settings import settings
 
 
 class _ApiResponse:
@@ -46,7 +46,8 @@ class _ApiResponse:
         )
 
 
-# helpers
+# === Public API Functions ===
+
 def ok(data: Any = None, message: str = None, meta: Optional[Dict[str, Any]] = None):
     return _ApiResponse._success(data=data, message=message, status_code=200, meta=meta)
 
@@ -71,7 +72,7 @@ def not_found(message: str = None):
 def bad_request(message: str = None, details: Any = None):
     return _ApiResponse._error(
         message=message or settings.MESSAGES_RESPONSE["BAD_REQUEST"],
-        error_code="BAD REQUEST",
+        error_code="BAD_REQUEST",
         status_code=400,
         details=details,
     )
