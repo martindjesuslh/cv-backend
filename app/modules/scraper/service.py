@@ -7,7 +7,7 @@ import time
 import re
 
 
-class _ScraperClient:
+class ScraperClient:
     """Client for scraping web pages using different methods"""
 
     def __init__(self):
@@ -112,6 +112,3 @@ class _ScraperClient:
             "Accept-Encoding": "gzip, deflate",
             "Connection": "keep-alive",
         }
-
-
-scraped_client = _ScraperClient()

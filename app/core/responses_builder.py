@@ -1,7 +1,7 @@
 from typing import Any, Optional, Dict
 from fastapi.responses import JSONResponse
-from app.core.schemas.responses import SuccessHttpResponse, ErrorHttpResponse
-from app.core.config.settings import settings
+from app.core.schemas.responses import SuccessHttpResponse, ErrorHttpResponse, ErrorCode, SuccessMessage, ErrorMessage  # fmt:skip
+from app.core.constants import ResponseMessages
 
 
 class _ApiResponse:
@@ -16,7 +16,7 @@ class _ApiResponse:
             success=True,
             status_code=status_code,
             data=data,
-            message=message or settings.MESSAGES_RESPONSE["SUCCESS"],
+            message=message or ResponseMessages["SUCCESS"],
             meta=meta,
         )
 
@@ -36,7 +36,7 @@ class _ApiResponse:
         response = ErrorHttpResponse(
             success=False,
             status_code=status_code,
-            error=message or settings.MESSAGES_RESPONSE["INTERNAL_ERROR"],
+            error=message or ResponseMessages["INTERNAL_ERROR"],
             error_code=error_code,
             details=details,
         )
@@ -48,13 +48,14 @@ class _ApiResponse:
 
 # === Public API Functions ===
 
+
 def ok(data: Any = None, message: str = None, meta: Optional[Dict[str, Any]] = None):
     return _ApiResponse._success(data=data, message=message, status_code=200, meta=meta)
 
 
 def internal_error(message: str = None, details: Any = None):
     return _ApiResponse._error(
-        message=message or settings.MESSAGES_RESPONSE["INTERNAL_ERROR"],
+        message=message or ResponseMessages["INTERNAL_ERROR"],
         status_code=500,
         details=details,
         error_code="INTERNAL_ERROR",
@@ -63,7 +64,7 @@ def internal_error(message: str = None, details: Any = None):
 
 def not_found(message: str = None):
     return _ApiResponse._error(
-        message=message or settings.MESSAGES_RESPONSE["NOT_FOUND"],
+        message=message or ResponseMessages["NOT_FOUND"],
         status_code=404,
         error_code="NOT_FOUND",
     )
@@ -71,7 +72,7 @@ def not_found(message: str = None):
 
 def bad_request(message: str = None, details: Any = None):
     return _ApiResponse._error(
-        message=message or settings.MESSAGES_RESPONSE["BAD_REQUEST"],
+        message=message or ResponseMessages["BAD_REQUEST"],
         error_code="BAD_REQUEST",
         status_code=400,
         details=details,

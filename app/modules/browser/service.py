@@ -7,7 +7,7 @@ from app.modules.browser.models import BrowserTask, BrowserAction, ActionType
 import time
 
 
-class _BrowserController:
+class BrowserController:
     def __init__(self):
         self.driver = None
 
@@ -77,6 +77,3 @@ class _BrowserController:
             "error": error_message,
             "session_active": bool(self.driver),
         }
-
-
-browser_controller = _BrowserController()

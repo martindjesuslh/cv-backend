@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, EmailStr
+from pydantic import BaseModel, Field, EmailStr, HttpUrl
 from typing import List
 from app.utils.validations import DateRange
 
@@ -46,3 +46,8 @@ class CvInfo(BaseModel):
     key_competences: List[KeyCompetencies] = Field(..., min_length=1, max_length=20)
     work_experience: List[WorkExperience] = Field(..., min_length=1, max_length=20)
     education: List[Education] = Field(..., min_length=1, max_length=20)
+
+
+class Payload(BaseModel):
+    cv: CvInfo
+    profiles: List[HttpUrl]
