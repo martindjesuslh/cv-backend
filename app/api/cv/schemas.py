@@ -1,5 +1,5 @@
-from pydantic import BaseModel, Field, EmailStr, HttpUrl
-from typing import List
+from pydantic import BaseModel, Field, HttpUrl
+from typing import List, Dict, Any
 from app.utils.validations import DateRange
 
 
@@ -13,10 +13,16 @@ class KeyCompetencies(BaseModel):
 class ContactInfo(BaseModel):
     fullName: str = Field(..., min_length=3, max_length=100, description="Full name")
     address: str = Field(..., min_length=3, max_length=100, description="address valid")
-    email: EmailStr = Field(..., description="Email valid")
-    phone: str = Field(..., min_length=8, max_length=14, regex=r"^[\+]?[0-9\s\-\(\)]+$")
+    email: str = Field(
+        ...,
+        pattern=r"^[a-zA-Z0-9]([a-zA-Z0-9._-])*[a-zA-Z0-9]@[a-zA-Z0-9]([a-zA-Z0-9.-])*[a-zA-Z0-9]\.[a-zA-Z]{2,}$",
+        description="Email invalid",
+    )
+    phone: str = Field(
+        ..., min_length=8, max_length=14, pattern=r"^[\+]?[0-9\s\-\(\)]+$"
+    )
     whatsApp: str = Field(
-        ..., min_length=8, max_length=14, regex=r"^[\+]?[0-9\s\-\(\)]+$"
+        ..., min_length=8, max_length=14, pattern=r"^[\+]?[0-9\s\-\(\)]+$"
     )
 
 
@@ -48,6 +54,12 @@ class CvInfo(BaseModel):
     education: List[Education] = Field(..., min_length=1, max_length=20)
 
 
-class Payload(BaseModel):
+class RequestBody(BaseModel):
     cv: CvInfo
     profiles: List[HttpUrl]
+    cookies: Dict[str, Any]
+
+
+class Pages(BaseModel):
+    source: str
+    name: str

@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, HttpUrl
 from typing import List, Dict, Optional, Any
 from enum import Enum
 from app.core.config.settings import settings
@@ -10,7 +10,7 @@ class ScrapeMethod(str, Enum):
 
 
 class ScrapedTarget(BaseModel):
-    url: str
+    url: HttpUrl
     method: ScrapeMethod = ScrapeMethod.BEAUTIFUL_SOUP
     selectors: List[str] = []
     headers: Optional[Dict[str, str]] = None

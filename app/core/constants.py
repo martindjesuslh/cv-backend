@@ -1,3 +1,10 @@
+from enum import Enum
+
+
+class SelectorsIndeed(Enum):
+    BUTTON_SKILLS = "button.js-match-insights-provider-7yw9u9 e19afand0"
+
+
 class ResponseMessages:
     SUCCESS = "Operation completed successfully"
     CREATED = "Resource created successfully"

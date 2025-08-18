@@ -3,6 +3,7 @@ from typing import Any, Optional, Dict, TypeVar, Type, Union
 from pydantic import BaseModel
 from app.core.schemas.responses import SuccessHttpResponse, ErrorHttpResponse
 from app.core.config.settings import settings
+import atexit
 
 T = TypeVar("T", bound=BaseModel)
 
@@ -13,7 +14,8 @@ class _ApiClient:
     def __init__(self, base_url: str = None, timeout: int = None):
         self.base_url = (base_url or settings.API_BASE_URL).rstrip("/")
         self.timeout = timeout or settings.REQUEST_TIMEOUT
-        self.client = httpx.AsyncClient(timeout=timeout)
+        self.client = httpx.AsyncClient(timeout=self.timeout)
+        atexit.register(self._cleanup)
 
     async def _make_request(
         self,
@@ -93,13 +95,6 @@ class _ApiClient:
                 details=response.text,
             )
 
-    def _get_success_message(self, status_code: int) -> str:
-        messages = {
-            201: settings.MESSAGES_RESPONSE["CREATED"],
-            204: settings.MESSAGES_RESPONSE["DELETED"],
-        }
-        return messages.get(status_code, settings.MESSAGES_RESPONSE["CREATED"])
-
     async def get(
         self,
         endpoint: str,
@@ -133,6 +128,23 @@ class _ApiClient:
             headers=headers,
             timeout=timeout,
         )
+
+    def _cleanup(self):
+        if hasattr(self, "client") and self.client:
+            import asyncio
+
+            try:
+                loop = asyncio.get_event_loop()
+                if loop.is_running():
+                    loop.create_task(self.client.aclose())
+                else:
+                    loop.run_until_complete(self.client.aclose())
+            except Exception:
+                pass
+
+    async def close(self):
+        if self.client:
+            await self.client.aclose()
 
 
 api_client = _ApiClient(
