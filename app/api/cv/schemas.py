@@ -54,12 +54,14 @@ class CvInfo(BaseModel):
     education: List[Education] = Field(..., min_length=1, max_length=20)
 
 
+# class RequestBody(BaseModel):
+#     cv: CvInfo
+#     profiles: List[HttpUrl]
+
 class RequestBody(BaseModel):
-    cv: CvInfo
     profiles: List[HttpUrl]
-    cookies: Dict[str, Any]
 
 
 class Pages(BaseModel):
-    source: str
-    name: str
+    url: str
+    page_source: str
