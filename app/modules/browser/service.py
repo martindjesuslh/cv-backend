@@ -4,6 +4,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from typing import Dict, List, Any, Optional, ClassVar
 from app.modules.browser.models import BrowserTask, BrowserAction, ActionType
+from asyncio import get_event_loop
+from concurrent.futures import ThreadPoolExecutor
 import time
 import atexit
 
@@ -19,6 +21,8 @@ class _BrowserClient:
 
     def __init__(self):
         if not _BrowserClient._initialized:
+            self.max_drivers = 3
+            self.semaphore = ThreadPoolExecutor(max_workers=self.max_drivers)
             self.driver: Optional[webdriver.Chrome] = None
             self._current_url: Optional[str] = None
 
@@ -26,20 +30,26 @@ class _BrowserClient:
 
             atexit.register(self._cleanup_driver)
 
-    def execute_task(self, task: BrowserTask) -> Dict[str, Any]:
+    async def execute_task(self, task: BrowserTask) -> Dict[str, Any]:
         try:
-            self._ensure_driver(task.headless)
+            await get_event_loop().run_in_executor(
+                self.semaphore, self._ensure_driver, task.headless
+            )
 
             if self._current_url != task.url:
-                self.driver.get(task.url)
-                self._current_url = task.url
+                await get_event_loop().run_in_executor(
+                    self.semaphore, self._navigate_to_url, task.url
+                )
 
             if task.cookies:
-                self._add_cookies_and_refresh(task.cookies)
+                await get_event_loop().run_in_executor(
+                    self.semaphore, self._add_cookies_and_refresh, task.cookies
+                )
+            page_source = await get_event_loop().run_in_executor(
+                self.semaphore, self._get_page_source
+            )
 
-            self._execute_actions(task.actions)
-
-            return self._success_response(self.driver.page_source)
+            return self._success_response(page_source)
 
         except Exception as e:
             return self._error_response(str(e))
@@ -61,6 +71,15 @@ class _BrowserClient:
             element.click()
         elif action.type == ActionType.WAIT and action.wait_time:
             time.sleep(action.wait_time)
+
+    def _navigate_to_url(self, url: str):
+        self.driver.get(url)
+        self._current_url = url
+
+    def _get_page_source(self) -> str:
+        if not self.driver:
+            raise Exception("No active session")
+        return self.driver.page_source
 
     def _ensure_driver(self, headless: bool):
         if self.driver is None:
@@ -90,6 +109,8 @@ class _BrowserClient:
             finally:
                 self.driver = None
                 self._current_url = None
+        if hasattr(self, "semaphore"):
+            self.semaphore.shutdown(wait=True)
 
     def _add_cookies_and_refresh(self, cookies: Dict[str, str]):
         for name, value in cookies.items():

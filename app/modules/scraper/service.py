@@ -1,5 +1,5 @@
 from bs4 import BeautifulSoup
-from typing import Dict, Optional, Any
+from typing import Optional
 from app.modules.scraper.models import ScrapedTarget, ScrapedData, ScrapeMethod
 import time
 import re
@@ -63,3 +63,5 @@ class ScraperClient:
             meta_tag = soup.find("meta", {"itemprop": name})
 
         return meta_tag.get("content") if meta_tag else None
+
+scraper_client = ScraperClient()
